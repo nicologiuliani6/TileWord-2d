@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     }
 
     // 2. Crea finestra
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "opengv_title_here", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "TileWord-2d", nullptr, nullptr);
     if (!window) {
         std::cerr << "Errore apertura finestra\n";
         glfwTerminate();
@@ -37,13 +37,24 @@ int main(int argc, char* argv[]) {
         std::cerr << "Errore inizializzazione GLEW\n";
         return -1;
     }
+    // Stampa informazioni sulla versione OpenGL
+    const GLubyte* renderer = glGetString(GL_RENDERER); // nome GPU
+    const GLubyte* vendor   = glGetString(GL_VENDOR);   // vendor GPU
+    const GLubyte* version  = glGetString(GL_VERSION);  // versione OpenGL
+    const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION); // versione GLSL
+
+    std::cout << "Renderer: " << renderer << std::endl;
+    std::cout << "Vendor: " << vendor << std::endl;
+    std::cout << "OpenGL Version: " << version << std::endl;
+    std::cout << "GLSL Version: " << glslVersion << std::endl;
+
     //colore sfondo
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //R, G, B, clear
     
     //inizializziamo il GameManager
     GameManager GameManager;
     // Carico due livelli
-    GameManager.addLevel("levels/level1.txt", 16, 16);
+    GameManager.addLevel("levels/entity_animation.txt", 16, 16);
     
     const double dt = 1.0 / HZ; // logica a 60Hz
     double accumulator = 0.0;
@@ -55,6 +66,7 @@ int main(int argc, char* argv[]) {
     int fps_counter = 0;
     double fpsTime = lastTime;
     int current_lvl = 0;
+    //loop gioco
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double frameTime = currentTime - lastTime;
@@ -63,49 +75,39 @@ int main(int argc, char* argv[]) {
 
         bool inputDetected = false;
 
-    // aggiornamento logica
-    while (accumulator >= dt) {
-        const Level& lvl = GameManager.getLevel(current_lvl); // livello corrente
+        // LOGICA (movimento a timestep fisso)
+        while (accumulator >= dt) {
+            const Level& lvl = GameManager.getLevel(current_lvl);
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            GameManager.player.moveUp(dt, lvl);
-            inputDetected = true;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                GameManager.player.moveUp(dt, lvl);
+                inputDetected = true;
+            }
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                GameManager.player.moveDown(dt, lvl);
+                inputDetected = true;
+            }
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                GameManager.player.moveLeft(dt, lvl);
+                inputDetected = true;
+            }
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                GameManager.player.moveRight(dt, lvl);
+                inputDetected = true;
+            }
+
+            if (inputDetected) lastInputTime = currentTime;
+            accumulator -= dt;
         }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            GameManager.player.moveDown(dt, lvl);
-            inputDetected = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            GameManager.player.moveLeft(dt, lvl);
-            inputDetected = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            GameManager.player.moveRight(dt, lvl);
-            inputDetected = true;
-        }
 
-        // aggiorna l'ultimo tempo di input
-        if (inputDetected) lastInputTime = currentTime;
-
-        accumulator -= dt;
-}
-
-
-        // rendering
+        // RENDERING
         glClear(GL_COLOR_BUFFER_BIT);
-        GameManager.renderLevel(current_lvl);
-
-        // Se inattivo da troppo tempo, frame 0,0
-        if (currentTime - lastInputTime >= idleThreshold) {
-            GameManager.renderPlayer(0, 0);
-        } else {
-            GameManager.renderPlayer(); // usa frame attuale
-        }
+        GameManager.renderLevel(current_lvl, frameTime, (currentTime - lastInputTime < idleThreshold));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        // fps counter
+        // FPS COUNTER
         fps_counter++;
         if(currentTime - fpsTime >= 1.0){
             std::cout << "\r" << (VSync ? "(VSync: on) " : "(VSync: off) ")
@@ -114,7 +116,6 @@ int main(int argc, char* argv[]) {
             fpsTime = currentTime;
         }
     }
-
 
 
     // 5. Pulizia

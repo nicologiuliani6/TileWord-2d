@@ -23,7 +23,7 @@ constexpr std::pair<int,int> getResolution(Resolution res) {
 }
 
 // Seleziona la risoluzione che vuoi usare
-constexpr Resolution CURRENT_RES = Resolution::R_1024x768;
+constexpr Resolution CURRENT_RES = Resolution::R_800x600;
 constexpr int WIDTH  = getResolution(CURRENT_RES).first;
 constexpr int HEIGHT = getResolution(CURRENT_RES).second;
 
@@ -31,7 +31,7 @@ constexpr int HEIGHT = getResolution(CURRENT_RES).second;
 constexpr float ASPECT_RATIO = float(WIDTH) / float(HEIGHT);
 
 #define GRID_SIZE 16
-#define VSync true
+#define VSync false
 #define HZ 60.0
 
 #endif // VARIABLE_HPP
