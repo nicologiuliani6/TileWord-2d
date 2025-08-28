@@ -72,7 +72,7 @@ namespace TextureRender {
 
 // ---------- TILE TEXTURES ----------
 static std::map<int, std::string> tileTextures = {
-    //id: 0 trasparente 
+    {0, "texture/block/void.png"},
     {1, "texture/block/Brick/Brick_01-256x256.png"},
     {2, "texture/block/Brick/Brick_02-256x256.png"},
     {3, "texture/block/Brick/Brick_03-256x256.png"},
@@ -235,4 +235,3 @@ static std::map<int, std::string> tileTextures = {
     {160, "texture/block/Wood/Wood_20-256x256.png"}
 };
 #endif // TEXTURE_LOADER_HPP
-

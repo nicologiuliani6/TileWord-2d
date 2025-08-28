@@ -53,9 +53,11 @@ int main(int argc, char* argv[]) {
     
     //inizializziamo il GameManager
     GameManager GameManager;
-    // Carico due livelli
-    GameManager.addLevel("levels/entity_animation.txt", 16, 16);
-    
+    // Carico TUTTI i livelli
+    loadAllLevels(GameManager, "levels", GRID_SIZE, GRID_SIZE);
+    for (const auto& pair : LevelMap) {
+        std::cout << pair.first << " -> " << pair.second << std::endl;
+    }
     const double dt = 1.0 / HZ; // logica a 60Hz
     double accumulator = 0.0;
 
@@ -65,7 +67,15 @@ int main(int argc, char* argv[]) {
 
     int fps_counter = 0;
     double fpsTime = lastTime;
-    int current_lvl = 0;
+    int current_lvl;
+    auto it = LevelMap.find("levels/entity_animation.txt");
+    if (it != LevelMap.end()) {
+        std::cout << "Livello iniziale trovato! path=" << it->first << "; id=" << it->second << std::endl;
+        current_lvl = it->second;
+    } else {
+        std::cerr << "Livello iniziale non esistente !" << std::endl;
+        return 1;
+    }
     //loop gioco
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
@@ -116,7 +126,6 @@ int main(int argc, char* argv[]) {
             fpsTime = currentTime;
         }
     }
-
 
     // 5. Pulizia
     glfwDestroyWindow(window);

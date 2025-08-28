@@ -10,6 +10,7 @@
 #include "TextureLoader.hpp"  // mantiene TextureRender::RenderTexture
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 
 // ---------- COSTANTI MONDO ----------
 const float WORLD_X_MIN = 0.0f;
@@ -22,7 +23,13 @@ struct Decoration {
     std::string texturePath;
     int x, y;         // coordinate nella griglia
     int width, height; // dimensioni in tiles
-    float render_height_y=0;
+    float render_height_y=0; //serve per il rendering
+};
+// ---------- PORTAL ---------- (ovvero delle decorazioni con caratteristiche extra)
+struct Portal : public Decoration {
+    std::string path_new_level;
+    int new_player_x_cord, new_player_y_cord;
+    float render_height_x=0; //serve per i portali per la logica di teletrasporto
 };
 // ---------- ENTITY ----------
 struct Entity {
@@ -38,7 +45,7 @@ struct Entity {
     int stop_frame_y = 8;
     float animTimer = 0.0f, animDelay = 0.15f;
 
-    float render_height_y=0;
+    float render_height_y=0; //serve per il rendering
 
     void updateAnimation(float dt) {
         animTimer += dt;
@@ -82,23 +89,23 @@ struct Entity {
     }
 
 };
-
 // ---------- HITBOX ----------
 struct Hitbox {
     float x0, y0, x1, y1; // coordinate float
 };
-
 // ---------- TILE ----------
 struct Tile {
     int id = 0;
     std::string texturePath; // path diretta alla texture
 };
-
+//mappa per memorizzare il percorso dei livelli
+static std::map<std::string, int> LevelMap;
 // ---------- LEVEL ----------
 struct Level {
     int width, height;
     std::vector<Tile> tiles;
     std::vector<Decoration> decorations;
+    std::vector<Portal> portals;
     std::vector<Entity> entity;
     std::vector<Hitbox> hitboxes;
 
@@ -107,9 +114,9 @@ struct Level {
     Tile& getTile(int x, int y) { return tiles[y*width + x]; }
     const Tile& getTile(int x, int y) const { return tiles[y*width + x]; }
 };
-
 // ---------- FUNZIONE DI CARICAMENTO ----------
 inline Level loadLevelFromFile(const std::string& filename, int w, int h) {
+    std::cout << "CARICO LIVELLO: " << filename << std::endl;
     Level lvl(w, h);
     std::ifstream file(filename);
     if (!file) { 
@@ -151,6 +158,32 @@ inline Level loadLevelFromFile(const std::string& filename, int w, int h) {
                       << " x1=" << hb.x1
                       << " y1=" << hb.y1 << std::endl;
         } 
+        else if (line[0] == 'P') { //portale
+            std::stringstream ss(line.substr(2));
+            Portal port;
+            ss >> port.texturePath >> port.x >> port.y >> port.width >> port.height >> port.path_new_level >> port.new_player_x_cord >> port.new_player_y_cord;
+
+            // correzione scalabile per hitbox
+            float correctFactorX = 0.04f * port.x;                 // piccolo offset orizzontale
+            float correctFactorY = 0.10f * port.y;         // più alto se port.y grande
+
+            Hitbox hb;
+            hb.x0 = WORLD_X_MIN + port.x * TILE_SIZE_X * (1.0f+0.04f);
+            hb.y0 = WORLD_Y_MIN + port.y * TILE_SIZE_Y + TILE_SIZE_Y * correctFactorY;
+            hb.x1 = WORLD_X_MIN + (port.x + port.width) * TILE_SIZE_X + TILE_SIZE_X * correctFactorX;
+            float maxHeight = std::min(static_cast<float>(port.height), 3.0f);
+            hb.y1 = WORLD_Y_MIN + (port.y + maxHeight) * TILE_SIZE_Y + TILE_SIZE_Y * correctFactorY;
+            port.render_height_x = static_cast<float>((hb.x0 + hb.x1)/2);   
+            port.render_height_y = static_cast<float>(hb.y0);
+            lvl.portals.push_back(port);
+            lvl.hitboxes.push_back(hb);
+
+            std::cout << "Portale trovata: " << port.texturePath
+                      << " -> hitbox float: x0=" << hb.x0
+                      << " y0=" << hb.y0
+                      << " x1=" << hb.x1
+                      << " y1=" << hb.y1 << std::endl;
+        }
         else if (line[0] == 'E') { // entita
             std::stringstream ss(line.substr(2));
             Entity ent;
@@ -211,7 +244,6 @@ inline Level loadLevelFromFile(const std::string& filename, int w, int h) {
 
     return lvl;
 }
-
 // ---------- PLAYER ----------
 struct Player {
     float x = 0.0f, y = -2.0f;
@@ -275,8 +307,6 @@ struct Player {
         }
     }
 };
-
-
 // ---------- GAME MANAGER ----------
 class GameManager {
     private:
@@ -311,14 +341,15 @@ class GameManager {
         Player player{"texture/char_a_p1/char_a_p1_0bas_humn_v01.png"};
 
         void addLevel(const std::string& filename, int w, int h) {
-            levels.push_back(loadLevelFromFile(filename, w, h));
+            LevelMap.insert({filename, levels.size()}); //inserisce nella HashMap l'indice del arrau della posizione del livello 
+            levels.push_back(loadLevelFromFile(filename, w, h)); //inseriamo nel array il livello (sara nel indice trovato prima)
         }
 
         Level& getLevel(int idx) {
             return levels[idx];
         }
 
-        void renderLevel(int lvl_number, double frameTime, bool playerActive) {
+        void renderLevel(int& lvl_number, double frameTime, bool playerActive) {
             if (lvl_number < 0 || lvl_number >= (int)levels.size()) {
                 std::cerr << "Errore: livello " << lvl_number << " inesistente!\n";
                 return;
@@ -373,6 +404,19 @@ class GameManager {
                     "Decorazione"
                 });
             }
+            // PORTALI
+            for (const auto& port : lvl.portals) {
+                float x0 = -1.0f + port.x * quadSizeX;
+                float y0 = -1.0f + port.y * quadSizeY;
+                float x1 = x0 + port.width * quadSizeX;
+                float y1 = y0 + port.height * quadSizeY;
+
+                drawables.push_back(Drawable{
+                    port.render_height_y,  // base del portale
+                    [=]() { TextureRender::RenderTexture(port.texturePath, x0, y0, x1, y1); },
+                    "Portale"
+                });
+            }
 
             // ENTITY
             for (Entity& ent : lvl.entity) {
@@ -397,8 +441,52 @@ class GameManager {
                 //std::cout << d.name << " : Y = " << d.y << std::endl;  // debug
                 d.draw();
             }
-        }
+            
+            // controlliamo se il player interagisce con un portale
+            for (const auto& port : getLevel(lvl_number).portals) {
+                #define MARGIN_PORTAL_X 0.05f
+                #define MARGIN_PORTAL_Y 0.3f
+                //se la x,y del player sono vicine alla x,y del portale allora 
+                //carica il nuovo livello
+                if (port.render_height_x * (1.0f - MARGIN_PORTAL_X) <= player.x && port.render_height_x * (1.0f + MARGIN_PORTAL_X) >= player.x){
+                    //se il player e' nel margine del portale
+                    if (port.render_height_y * (1.0f - ((port.height <=2) ? MARGIN_PORTAL_Y : 0.05f)) <= player.y && port.render_height_y * (1.0f + MARGIN_PORTAL_Y) >= player.y){
+                        //se il player e' nel margine anche delle y del portale
+                        printf("INTERAZIONE PORTALE!!!!! \n");
+                        auto it = LevelMap.find(port.path_new_level);
+                        if (it != LevelMap.end()) {
+                            std::cout << "Cambio scena, nuovo livello = " << it->first << std::endl;
+                            std::cout << "SPOSTO PLAYER A: x= " << port.new_player_x_cord << "; y= " << port.new_player_y_cord << std::endl;
+                            lvl_number = it->second;
+                            player.x = port.new_player_x_cord;
+                            player.y = port.new_player_y_cord;
+                            //TODO: sistemare animazioni dopo passaggio portale
+                            //TODO: mettere transizione
 
+                        } else {
+                            std::cerr << "ERRORE GRAVE: livello non trovato nella HashMap! (" << port.path_new_level << ")" << std::endl;
+                        }
+
+                    }
+
+                }
+            }
+        }
 };
+
+void loadAllLevels(GameManager& gameManager, const std::string& folder, int gridX, int gridY) {
+    namespace fs = std::filesystem;
+
+    try {
+        for (const auto& entry : fs::directory_iterator(folder)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+                gameManager.addLevel(entry.path().string(), gridX, gridY);
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "Errore nell'accesso alla cartella " << folder 
+                  << ": " << e.what() << std::endl;
+    }
+}
 
 #endif // GAME_MANAGER_HPP
