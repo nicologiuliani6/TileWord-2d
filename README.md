@@ -4,7 +4,7 @@ A 2D tile-based game built on a **custom engine** designed for **high performanc
 
 ## Screenshots
 
-![Gameplay](gameplay.png)
+![Gameplay](screenshots/gameplay.png)
 *TileWord-2D gameplay showing the tile-based world and character movement*
 
 ## Features
