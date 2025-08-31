@@ -21,8 +21,8 @@ const float WORLD_Y_MAX = 45.3f;
 // ---------- DECORATION ----------
 struct Decoration {
     std::string texturePath;
-    int x, y;         // coordinate nella griglia
-    int width, height; // dimensioni in tiles
+    float x, y;         // coordinate nella griglia
+    float width, height; // dimensioni in tiles
     float render_height_y=0; //serve per il rendering
 };
 // ---------- PORTAL ---------- (ovvero delle decorazioni con caratteristiche extra)
@@ -246,7 +246,7 @@ inline Level loadLevelFromFile(const std::string& filename, int w, int h) {
 }
 // ---------- PLAYER ----------
 struct Player {
-    float x = 0.0f, y = -2.0f;
+    float x = 25.0f, y = 22.0f;
     int frameWidth = 10, frameHeight = 13;
     int framesPerRow = 8, framesPerCol = 8;
     std::string texturePath;
@@ -444,13 +444,13 @@ class GameManager {
             
             // controlliamo se il player interagisce con un portale
             for (const auto& port : getLevel(lvl_number).portals) {
-                #define MARGIN_PORTAL_X 0.05f
+                #define MARGIN_PORTAL_X 0.12f
                 #define MARGIN_PORTAL_Y 0.3f
                 //se la x,y del player sono vicine alla x,y del portale allora 
                 //carica il nuovo livello
                 if (port.render_height_x * (1.0f - MARGIN_PORTAL_X) <= player.x && port.render_height_x * (1.0f + MARGIN_PORTAL_X) >= player.x){
                     //se il player e' nel margine del portale
-                    if (port.render_height_y * (1.0f - ((port.height <=2) ? MARGIN_PORTAL_Y : 0.05f)) <= player.y && port.render_height_y * (1.0f + MARGIN_PORTAL_Y) >= player.y){
+                    if (port.render_height_y * (1.0f - ((port.height <=2) ? MARGIN_PORTAL_Y : 0.05f)) <= player.y && port.render_height_y * (1.0f) >= player.y){
                         //se il player e' nel margine anche delle y del portale
                         printf("INTERAZIONE PORTALE!!!!! \n");
                         auto it = LevelMap.find(port.path_new_level);
@@ -461,8 +461,8 @@ class GameManager {
                             player.x = port.new_player_x_cord;
                             player.y = port.new_player_y_cord;
                             //TODO: sistemare animazioni dopo passaggio portale
-                            //TODO: mettere transizione
 
+                            TextureRender::RenderBlackTransition(1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
                         } else {
                             std::cerr << "ERRORE GRAVE: livello non trovato nella HashMap! (" << port.path_new_level << ")" << std::endl;
                         }

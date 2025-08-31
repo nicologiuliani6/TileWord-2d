@@ -7,7 +7,8 @@
 #include <unordered_map>
 #include <string>
 #include <map>
-
+#include <thread>
+#include <chrono>
 // --- STB_IMAGE --- 
 #ifdef TEXTURE_LOADER_IMPLEMENTATION 
 #define STB_IMAGE_IMPLEMENTATION 
@@ -66,6 +67,39 @@ namespace TextureRender {
             glTexCoord2f(1.0f, 0.0f); glVertex2f(x1, y1);
             glTexCoord2f(0.0f, 0.0f); glVertex2f(x0, y1);
         glEnd();
+    }
+
+     // Effetto di transizione nera (fade)
+    inline void RenderBlackTransition(float alpha, float x0, float y0, float x1, float y1) {
+        if (alpha <= 0.0f) return; // nessun effetto
+        if (alpha > 1.0f) alpha = 1.0f;
+
+        // Abilita blending per la trasparenza
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // Disabilita texture per disegnare solo il quadrato nero
+        glDisable(GL_TEXTURE_2D);
+            
+        
+        glColor4f(0.0f, 0.0f, 0.0f, alpha);
+        
+        glBegin(GL_QUADS);
+            glVertex2f(x0, y0);
+            glVertex2f(x1, y0);
+            glVertex2f(x1, y1);
+            glVertex2f(x0, y1);
+        glEnd();
+
+        // Ripristina lo stato
+        glEnable(GL_TEXTURE_2D);
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // reset colore
+         // Tempo di inizio
+        auto start = std::chrono::steady_clock::now();
+
+        // Loop finché non è passato 1 secondo
+        while (std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::steady_clock::now() - start).count() < 0.2f) {
+        }
     }
 
 } // namespace TextureRender
@@ -232,6 +266,163 @@ static std::map<int, std::string> tileTextures = {
     {157, "texture/block/Wood/Wood_17-256x256.png"},
     {158, "texture/block/Wood/Wood_18-256x256.png"},
     {159, "texture/block/Wood/Wood_19-256x256.png"},
-    {160, "texture/block/Wood/Wood_20-256x256.png"}
+    {160, "texture/block/Wood/Wood_20-256x256.png"}, 
+    {161, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 1.png"},
+    {162, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 2.png"},
+    {163, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 3.png"},
+    {164, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 4.png"},
+    {165, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 5.png"},
+    {166, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 6.png"},
+    {167, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 7.png"},
+    {168, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 8.png"},
+    {169, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 9.png"},
+    {170, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 10.png"},
+    {171, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 11.png"},
+    {172, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 12.png"},
+    {173, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 13.png"},
+    {174, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 14.png"},
+    {175, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 15.png"},
+    {176, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 16.png"},
+    {177, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 17.png"},
+    {178, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 18.png"},
+    {179, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 19.png"},
+    {180, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 20.png"},
+    {181, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 21.png"},
+    {182, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 22.png"},
+    {183, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 23.png"},
+    {184, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 24.png"},
+    {185, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 25.png"},
+    {186, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 26.png"},
+    {187, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 27.png"},
+    {188, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 28.png"},
+    {189, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 29.png"},
+    {190, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 30.png"},
+    {191, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 31.png"},
+    {192, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 32.png"},
+    {193, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 33.png"},
+    {194, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 34.png"},
+    {195, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 35.png"},
+    {196, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 36.png"},
+    {197, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 37.png"},
+    {198, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 38.png"},
+    {199, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 39.png"},
+    {200, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 40.png"},
+    {201, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 41.png"},
+    {202, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 42.png"},
+    {203, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 43.png"},
+    {204, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 44.png"},
+    {205, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 45.png"},
+    {206, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 46.png"},
+    {207, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 47.png"},
+    {208, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 48.png"},
+    {209, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 49.png"},
+    {210, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 50.png"},
+    {211, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 51.png"},
+    {212, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 52.png"},
+    {213, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 53.png"},
+    {214, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 54.png"},
+    {215, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 55.png"},
+    {216, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 56.png"},
+    {217, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 57.png"},
+    {218, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 58.png"},
+    {219, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 59.png"},
+    {220, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 60.png"},
+    {221, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 61.png"},
+    {222, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 62.png"},
+    {223, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 63.png"},
+    {224, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 64.png"},
+    {225, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 65.png"},
+    {226, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 66.png"},
+    {227, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 67.png"},
+    {228, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 68.png"},
+    {229, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 69.png"},
+    {230, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 70.png"},
+    {231, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 71.png"},
+    {232, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 72.png"},
+    {233, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 73.png"},
+    {234, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 74.png"},
+    {235, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 75.png"},
+    {236, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 76.png"},
+    {237, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 77.png"},
+    {238, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 78.png"},
+    {239, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 79.png"},
+    {240, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 80.png"},
+    {241, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 81.png"},
+    {242, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 82.png"},
+    {243, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 83.png"},
+    {244, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 84.png"},
+    {245, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 85.png"},
+    {246, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 86.png"},
+    {247, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 87.png"},
+    {248, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 88.png"},
+    {249, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 89.png"},
+    {250, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 90.png"},
+    {251, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 91.png"},
+    {252, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 92.png"},
+    {253, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 93.png"},
+    {254, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 94.png"},
+    {255, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 95.png"},
+    {256, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 96.png"},
+    {257, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 97.png"},
+    {258, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 98.png"},
+    {259, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 99.png"},
+    {260, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 100.png"},
+    {261, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 101.png"},
+    {262, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 102.png"},
+    {263, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 103.png"},
+    {264, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 104.png"},
+    {265, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 105.png"},
+    {266, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 106.png"},
+    {267, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 107.png"},
+    {268, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 108.png"},
+    {269, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 109.png"},
+    {270, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 110.png"},
+    {271, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 111.png"},
+    {272, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 112.png"},
+    {273, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 113.png"},
+    {274, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 114.png"},
+    {275, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 115.png"},
+    {276, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 116.png"},
+    {277, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 117.png"},
+    {278, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 118.png"},
+    {279, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 119.png"},
+    {280, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 120.png"},
+    {281, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 121.png"},
+    {282, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 122.png"},
+    {283, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 123.png"},
+    {284, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 124.png"},
+    {285, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 125.png"},
+    {286, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 126.png"},
+    {287, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 127.png"},
+    {288, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 128.png"},
+    {289, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 129.png"},
+    {290, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 130.png"},
+    {291, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 131.png"},
+    {292, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 132.png"},
+    {293, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 133.png"},
+    {294, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 134.png"},
+    {295, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 135.png"},
+    {296, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 136.png"},
+    {297, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 137.png"},
+    {298, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 138.png"},
+    {299, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 139.png"},
+    {300, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 140.png"},
+    {301, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 141.png"},
+    {302, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 142.png"},
+    {303, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 143.png"},
+    {304, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 144.png"},
+    {305, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 145.png"},
+    {306, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 146.png"},
+    {307, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 147.png"},
+    {308, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 148.png"},
+    {309, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 149.png"},
+    {310, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 150.png"},
+    {311, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 151.png"},
+    {312, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 152.png"},
+    {313, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 153.png"},
+    {314, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 154.png"},
+    {315, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 155.png"},
+    {316, "texture/decoration/furniture_pack/floors and walls/individual sprites/Slice 156.png"},
+    {317, "texture/block/grass.png"}
 };
 #endif // TEXTURE_LOADER_HPP

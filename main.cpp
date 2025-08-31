@@ -58,17 +58,19 @@ int main(int argc, char* argv[]) {
     for (const auto& pair : LevelMap) {
         std::cout << pair.first << " -> " << pair.second << std::endl;
     }
+    //frame di logica
     const double dt = 1.0 / HZ; // logica a 60Hz
     double accumulator = 0.0;
-
+    //timer
     double lastTime = glfwGetTime();
     double lastInputTime = lastTime; // tempo dell'ultimo input
     const double idleThreshold = 0.5; // secondi di inattività prima di frame 0,0
-
+    //init fps
     int fps_counter = 0;
     double fpsTime = lastTime;
+    //caricamento primo livello
     int current_lvl;
-    auto it = LevelMap.find("levels/entity_animation.txt");
+    auto it = LevelMap.find("levels/exterior.txt");
     if (it != LevelMap.end()) {
         std::cout << "Livello iniziale trovato! path=" << it->first << "; id=" << it->second << std::endl;
         current_lvl = it->second;
