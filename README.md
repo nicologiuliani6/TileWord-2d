@@ -61,7 +61,6 @@ g++ -std=c++17 main.cpp -lglfw -lGLEW -lGL -o tileworld
 
 **Minimum:**
 - OpenGL 2.1 support
-- 512MB RAM
 - Hardware from approximately 2005 or newer
 - Windows Vista or later / macOS 10.9+ / Linux with X11 / OpenBSD
 - Any graphics card with basic OpenGL support
